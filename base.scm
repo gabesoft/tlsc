@@ -72,9 +72,49 @@
                   (subst2 new o1 o2 (cdr l)))))))
 
 ; remove a member (all occurrences)
-(define mrmember
+(define multirmember
   (lambda (a lat)
     (cond
       ((null? lat) lat)
       ((eq? (car lat) a) (mrmember a (cdr lat)))
       (else (cons (car lat) (mrmember a (cdr lat)))))))
+
+; insert new to the right of old in l
+(define multiinsertR
+  (lambda (new old l)
+    (cond
+      ((null? l) l)
+      ((eq? (car l) old) (cons (car l)
+                               (cons new (multiinsertR new old (cdr l)))))
+      (else (cons (car l)
+                  (multiinsertR new old (cdr l)))))))
+
+; insert new to the left of old in l
+(define multiinsertL
+  (lambda (new old l)
+    (cond
+      ((null? l) l)
+      ((eq? (car l) old) (cons new
+                               (cons old (multiinsertL new old (cdr l)))))
+      (else (cons (car l)
+                  (multiinsertL new old (cdr l)))))))
+
+; replace ever occurrence of old with new in l
+(define multisubst
+  (lambda (new old l)
+    (cond
+      ((null? l) l)
+      ((eq? (car l) old) (cons new (multisubst new old (cdr l))))
+      (else (cons (car l)
+                  (multisubst new old (cdr l)))))))
+
+(define add1 (lambda (n) (+ n 1)))
+(define sub1 (lambda (n) (- n 1)))
+(define zero? (lambda (n) (eq? n 0)))
+
+(define plus 
+  (lambda (x y)
+    (cond
+      ((zero? y) x)
+      (else 
+        (add1 (plus x (sub1 y)))))))
