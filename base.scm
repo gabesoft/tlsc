@@ -64,12 +64,12 @@
                   (subst2 new o1 o2 (cdr l)))))))
 
 ; remove a member (all occurrences)
-(define multirmember
+(define multiremember
   (lambda (a lat)
     (cond
       ((null? lat) lat)
-      ((eq? (car lat) a) (multirmember a (cdr lat)))
-      (else (cons (car lat) (multirmember a (cdr lat)))))))
+      ((eq? (car lat) a) (multiremember a (cdr lat)))
+      (else (cons (car lat) (multiremember a (cdr lat)))))))
 
 ; insert new to the right of old in l
 (define multiinsertR
@@ -90,6 +90,36 @@
                                (cons old (multiinsertL new old (cdr l)))))
       (else (cons (car l)
                   (multiinsertL new old (cdr l)))))))
+
+(define multiinsertRL
+  (lambda (new oldL oldR lat)
+    (cond
+      ((null? lat) lat)
+      ((eq? (car lat) oldL)
+       (cons new (cons oldL (multiinsertRL new oldL oldR (cdr lat)))))
+      ((eq? (car lat) oldR)
+       (cons oldR (cons new (multiinsertRL new oldL oldR (cdr lat)))))
+      (else (cons (car lat) (multiinsertRL new oldL oldR (cdr lat)))))))
+
+(define multiinsertRL-co
+  (lambda (new oldL oldR lat acc)
+    (cond
+      ((null? lat) (acc '() 0 0))
+      ((eq? (car lat) oldL)
+       (multiinsertRL-co
+         new oldL oldR (cdr lat)
+         (lambda (newlat L R)
+           (acc (cons new (cons oldL newlat)) (add1 L) R))))
+      ((eq? (car lat) oldR)
+       (multiinsertRL-co
+         new oldL oldR (cdr lat)
+         (lambda (newlat L R)
+           (acc (cons oldR (cons new newlat)) L (add1 R)))))
+      (else
+        (multiinsertRL-co
+          new oldL oldR (cdr lat)
+          (lambda (newlat L R)
+            (acc (cons (car lat) newlat) L R)))))))
 
 ; replace ever occurrence of old with new in l
 (define multisubst
@@ -220,13 +250,13 @@
 
 (define one? (lambda (n) (eq? n 1)))
 
-(define rmember*
+(define remember*
   (lambda (a l)
     (cond
       ((null? l) l)
-      ((list? (car l)) (cons (rmember* a (car l)) (rmember* a (cdr l))))
-      ((eq? (car l) a) (rmember* a (cdr l)))
-      (else (cons (car l) (rmember* a (cdr l)))))))
+      ((list? (car l)) (cons (remember* a (car l)) (remember* a (cdr l))))
+      ((eq? (car l) a) (remember* a (cdr l)))
+      (else (cons (car l) (remember* a (cdr l)))))))
 
 (define insertR*
   (lambda (new old l)
@@ -308,12 +338,12 @@
                  (eqlist? (cdr l1) (cdr l2)))))))
 
 ; remove a member (only the first occurrence)
-(define rmember
+(define remember
   (lambda (s l)
     (cond
       ((null? l) l)
       ((equal? (car l) s) (cdr l))
-      (else (cons (car l) (rmember s (cdr l)))))))
+      (else (cons (car l) (remember s (cdr l)))))))
 
 ; ch 6
 (define numbered?
@@ -373,7 +403,7 @@
     (cond
       ((null? lat) lat)
       (else (cons (car lat)
-                  (makeset2 (multirmember (car lat) (cdr lat))))))))
+                  (makeset2 (multiremember (car lat) (cdr lat))))))))
 
 (define subset?
   (lambda (set1 set2)
@@ -446,7 +476,7 @@
 
 (define revrel
   (lambda (rel)
-    (cond 
+    (cond
       ((null? rel) '())
       (else (cons (revpair (car rel))
                   (revrel (cdr rel)))))))
@@ -459,4 +489,166 @@
 
 (define fullfun?
   (lambda (rel)
-    (and (set? (firsts rel)) (set? (seconds rel)))))
+    (and (set? (firsts rel))
+         (set? (seconds rel)))))
+
+; ch 8
+(define remember-f
+  (lambda (test? a l)
+    (cond
+      ((null? l) '())
+      ((test? a (car l)) (cdr l))
+      (else (cons (car l)
+                  (remember-f test? a (cdr l)))))))
+
+(define eq?-c (lambda (a) (lambda (x) (eq? x a))))
+
+(define remember-c
+  (lambda (test?)
+    (lambda (a l)
+      (cond
+        ((null? l) '())
+        ((test? a (car l)) (cdr l))
+        (else (cons (car l)
+                    ((remember-c test?) a (cdr l))))))))
+
+(define insertL-f
+  (lambda (test?)
+    (lambda (new old l)
+      (cond
+        ((null? l) l)
+        ((test? (car l) old) (cons new l))
+        (else (cons (car l)
+                    ((insertL-f test?) new old (cdr l))))))))
+
+(define insertR-f
+  (lambda (test?)
+    (lambda (new old l)
+      (cond
+        ((null? l) l)
+        ((test? (car l) old) (cons (car l)
+                                   (cons new (cdr l))))
+        (else (cons (car l)
+                    ((insertR-f test?) new old (cdr l))))))))
+
+(define insert-g
+  (lambda (test? seq)
+    (lambda (new old l)
+      (cond
+        ((null? l) l)
+        ((test? (car l) old) (seq new old (car l)))
+        (else (cons (car l)
+                    ((insert-g test? seq) new old (cdr l))))))))
+
+(define seqL
+  (lambda (new old l)
+    (cons new (cons old l))))
+
+(define seqR
+  (lambda (new old l)
+    (cons old (cons new l))))
+
+(define insertL-g
+  (lambda (test?)
+    (insert-g test? seqL)))
+
+(define insertR-g
+  (lambda (test?)
+    (insert-g test? seqR)))
+
+(define subst-g
+  (lambda (test?)
+    (insert-g test? (lambda (new old l) (cons new l)))))
+
+(define atom-to-fun
+  (lambda (x)
+    (cond
+      ((eq? x '+) add)
+      ((eq? x 'x) mul)
+      ((eq? x '^) pow)
+      (else 'unknown operator))))
+
+; exp of the form  (op e1 e2)
+(define value-f
+  (lambda (aexp)
+    (cond
+      ((atom? aexp) aexp)
+      (else ((atom-to-fun (operator aexp))
+             (value (fst-sub-exp aexp))
+             (value (snd-sub-exp aexp)))))))
+
+; remove a member (all occurrences)
+(define multiremember-f
+  (lambda (test?)
+    (lambda (a lat)
+      (cond
+        ((null? lat) lat)
+        ((test? (car lat) a) ((multiremember-f test?) a (cdr lat)))
+        (else (cons (car lat) ((multiremember-f test?) a (cdr lat))))))))
+
+; remove a member (all occurrences)
+(define multirememberT
+  (lambda (test? lat)
+    (cond
+      ((null? lat) lat)
+      ((test? (car lat)) (multirememberT test? (cdr lat)))
+      (else (cons (car lat) (multirememberT test? (cdr lat)))))))
+
+(define multiremember-co
+  (lambda (a lat acc)
+    (cond
+      ((null? lat) (acc '() '()))
+      ((eq? (car lat) a)
+       (multiremember-co a
+                         (cdr lat)
+                         (lambda (lat1 lat2)
+                           (acc lat1 (cons (car lat) lat2)))))
+      (else (multiremember-co a
+                              (cdr lat)
+                              (lambda (lat1 lat2)
+                                (acc (cons (car lat) lat1) lat2)))))))
+
+(define evens-only*
+  (lambda (l)
+    (cond
+      ((null? l) '())
+      ((list? (car l)) (cons (evens-only* (car l))
+                             (evens-only* (cdr l))))
+      ((odd? (car l)) (evens-only* (cdr l)))
+      (else (cons (car l) (evens-only* (cdr l)))))))
+
+(define even-odd*
+  (lambda (l acc)
+    (cond
+      ((null? l) (acc '() '()))
+      ((and (atom? (car l)) (odd? (car l)))
+       (even-odd* (cdr l)
+                  (lambda (evens odds)
+                    (acc evens (cons (car l) odds)))))
+      ((and (atom? (car l)) (even? (car l)))
+       (even-odd* (cdr l)
+                  (lambda (evens odds)
+                    (acc (cons (car l) evens) odds))))
+      (else
+        (even-odd* (cdr l)
+                   (lambda (evens odds)
+                     (even-odd* (car l)
+                                (lambda (e o)
+                                  (acc (cons e evens)
+                                       (cons o odds))))))))))
+
+(define mul*
+  (lambda (l)
+    (cond
+      ((null? l) 1)
+      ((list? (car l)) (* (mul* (car l)) (mul* (cdr l))))
+      (else (* (car l) (mul* (cdr l)))))))
+
+(define add*
+  (lambda (l)
+    (cond
+      ((null? l) 0)
+      ((list? (car l)) (+ (add* (car l)) (add* (cdr l))))
+      (else (+ (car l) (add* (cdr l)))))))
+
+; ch 9

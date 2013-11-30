@@ -1,3 +1,23 @@
+(define nil '())
+
+(member? 'a '(b c a d))
+(member? 'a '(b c  d))
+(remember 'a '(b c a d))
+(remember 'a '(b a c a d))
+(remember 'a '(b c d))
+
+(firsts '())
+(firsts '((a b) (c d) (e f)))
+(firsts '((a b) ((c) d) (e f)))
+
+(insertR 'e 'd '(a b c d f g h))
+(insertL 'e 'd '(a b c d f g h))
+(subst 'e 'd '(a b c d f g h))
+(subst2 'e 'd 'f '(a b c d f g h))
+(subst2 'e 'g 'f '(a b c d f g h))
+
+(mremember 'a '(b a c a d))
+
 (plus 8 9)
 
 (addtup '(1 2 3 4 5 6))
@@ -46,7 +66,7 @@
 (one? 'b)
 (one? 2)
 
-(rmember* 'a '(((a b) a b) (a b) a b c (d (e (f g a h)) a) a b))
+(remember* 'a '(((a b) a b) (a b) a b c (d (e (f g a h)) a) a b))
 (insertR* 'x 'a '(((a b) a b) (a b) a b c (d (e (f g a h)) a) a b))
 (insertL* 'x 'a '(((a b) a b) (a b) a b c (d (e (f g a h)) a) a b))
 (occur* 'a '(((a b) a b) (a b) a b c (d (e (f g a h)) a) a b))
@@ -65,14 +85,14 @@
          '(((b c d) e) f (g (h (k (l n) w) x) y) (z)))
 
 (equal? '(((b c d) e) f (g (h (k (l m) w) x) y) (z))
-         '(((b c d) e) f (g (h (k (l m) w) x) y) (z)))
+        '(((b c d) e) f (g (h (k (l m) w) x) y) (z)))
 (equal? '(((b c d) e) f (g (h (k (l m) w) x) y) (z))
-         '(((b c d) e) f (g (h (k (l n) w) x) y) (z)))
+        '(((b c d) e) f (g (h (k (l n) w) x) y) (z)))
 (equal? 'a 'b)
 (equal? 'a 'c)
 (equal? 'a 'a)
 
-(rmember '((a b) a b) '(((a b) a b) (a b) a b c (d (e (f g a h)) a) a b))
+(remember '((a b) a b) '(((a b) a b) (a b) a b c (d (e (f g a h)) a) a b))
 
 (numbered? '(3 + (4 + 5)))
 (numbered? '(3 + (4 x (6 ^ 7))))
@@ -151,3 +171,70 @@
 (fullfun? '((8 3) (4 2) (7 6) (6 2) (3 4)))
 (fullfun? '((8 3) (4 2) (7 6) (6 5) (3 4)))
 
+(remember-f eq? 'a '(b c d a b c))
+(remember-f eq? '(a b c) '(b c d (a b c) b c))
+(remember-f equal? '(a b c) '(b c d (a b c) b c))
+
+((eq?-c 'a) 'a)
+
+((remember-c eq?) 'a '(b c d a b c))
+((remember-c eq?) '(a b c) '(b c d (a b c) b c))
+((remember-c equal?) '(a b c) '(b c d (a b c) b c))
+
+((insertR-f eq?) 'e 'd '(a b c d f g h))
+((insertL-f eq?) 'e 'd '(a b c d f g h))
+
+((insertR-f equal?) 'e '(a b) '(a b c (a b) f g h))
+((insertL-f equal?) 'e '(a b) '(a b c (a b) f g h))
+
+((insertR-g equal?) 'e '(a b) '(a b c (a b) f g h))
+((insertL-g equal?) 'e '(a b) '(a b c (a b) f g h))
+((subst-g equal?) 'e '(a b) '(a b c (a b) f g h))
+
+(value-f 4)
+(value-f '(+ 3 4))
+(value-f '(x 3 4))
+(value-f '(+ 5 (x 6 2)))
+(value-f '(+ (x 3 4) (+ 5 (x 6 2))))
+(value-f '(^ (+ 2 (x 3 5)) (+ 2 1)))
+
+((multiremember-f eq?) 'a '(a b c d a b c a))
+((multiremember-f eq?) '(a b) '((a b) b c d (a b) b c a))
+((multiremember-f equal?) '(a b) '((a b) b c d (a b) b c a))
+
+(multirememberT (eq?-c 'a) '(a b c d a b c a))
+
+(multiremember-co 'a '(a b c d a b c d a) pair)
+(multiremember-co 'x '(a b c d a b c d a) pair)
+
+(multiremember-co 'a '(a b c d a b c d a) (lambda (x y) (null? y)))
+(multiremember-co 'x '(a b c d a b c d a) (lambda (x y) (null? y)))
+
+(multiremember-co 'a '(a b c d a b c d a) (lambda (x y) (pair (length x) (length y))))
+(multiremember-co 'x '(a b c d a b c d a) (lambda (x y) (pair (length x) (length y))))
+
+(multiinsertL 'a 'x '(x y z w x k))
+(multiinsertR 'a 'x '(x y z w x k))
+
+(multiinsertRL    'a 'x 'w '(x y z w x k))
+(multiinsertRL-co 'a 'x 'w '(x y z w x k x y z)
+                  (lambda (lat L R) (pair lat (pair L R))))
+(multiinsertRL-co 'salty 'fish 'chips 
+               '(chips and fish or fish and chips)
+               (lambda (lat L R) (pair lat (pair L R))))
+
+(evens-only* '(((3 4 5) 6 7) 8 9 10 (11 12) (13 (14 (15) 16 17)) 18))
+(evens-only* '((9 1 2 8) 3 10 ((9 9) 7 6) 2))
+
+(even-odd* '(((3 4 5) 6 7) 8 9 10 (11 12) (13 (14 (15) 16 17)) 18) pair)
+
+(mul* '((9 1 2 8) 3 10 ((9 9) 7 6) 2))
+(add* '((9 1 2 8) 3 10 ((9 9) 7 6) 2))
+
+(even-odd* '((9 1 2 8) 3 10 ((9 9) 7 6) 2)
+           (lambda (evens odds)
+             (pair (mul* evens) (add* odds))))
+
+(even-odd* '((9 1 2 8) 3 10 ((9 9) 7 6) 2)
+           (lambda (evens odds)
+             (cons (add* odds) (cons (mul* evens) evens))))
