@@ -457,7 +457,7 @@
 (define a-pair?
   (lambda (l)
     (cond
-      ((null? l) #f)
+      ((or (atom? l) (null? l)) #f)
       ((null? (cdr l)) #f)
       (else (null? (cdr (cdr l)))))))
 
@@ -652,3 +652,59 @@
       (else (+ (car l) (add* (cdr l)))))))
 
 ; ch 9
+(define looking
+  (lambda (a lat)
+    (keep-looking a (pick 0 lat) lat)))
+
+(define keep-looking 
+  (lambda (a b lat)
+    (cond
+      ((eq? a b) #t)
+      ((number? b) (keep-looking a (pick (sub1 b) lat) lat))
+      (else #f))))
+
+(define shift
+  (lambda (apair)
+    (pair (fst (fst apair)) 
+          (pair (snd (fst apair))
+                (snd apair)))))
+
+(define pair-weight
+  (lambda (x)
+    (cond
+      ((atom? x) 1)
+      (else (+ (* (pair-weight (fst x)) 2)
+               (pair-weight (snd x)))))))
+
+(define align
+  (lambda (x)
+    (cond
+      ((atom? x) x)
+      ((a-pair? (fst x)) (align (shift x)))
+      (else (pair (fst x) (align (snd x)))))))
+
+(define shuffle
+  (lambda (x)
+    (cond
+      ((atom? x) x)
+      ((a-pair? (fst x)) (shuffle (revpair x)))
+      (else (pair (fst x) (shuffle (snd x)))))))
+
+(define C
+  (lambda (n)
+    (cond
+      ((one? n) 1)
+      ((even? n) (C (/ n 2)))
+      (else (C (add1 (* 3 n)))))))
+
+(define A
+  (lambda (n m)
+    (cond
+      ((zero? n) (add1 m))
+      ((zero? m) (A (sub1 n) 1))
+      (else (A (sub1 n) (A n (sub1 m)))))))
+
+(define eternity
+  (lambda (x)
+    (eternity x)))
+

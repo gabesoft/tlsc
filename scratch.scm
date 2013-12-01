@@ -238,3 +238,24 @@
 (even-odd* '((9 1 2 8) 3 10 ((9 9) 7 6) 2)
            (lambda (evens odds)
              (cons (add* odds) (cons (mul* evens) evens))))
+
+(looking 'caviar '(6 2 4 caviar 5 7 3))
+(looking 8 '(6 2 4 8 5 7 3))
+(looking 'caviar '(6 2 grits caviar 5 7 3))
+
+(shift '((a b) c))
+(shift '((a b) (c d)))
+
+(pair-weight '((a b) c))
+(pair-weight '(a (b c)))
+(pair-weight '((a b) (c d)))
+(pair-weight '(a (b (c d))))
+(pair-weight '(((a b) c) (d e)))
+(pair-weight '(a (b (c (d e)))))
+
+(align '((a b) c))
+(align '((a b) (c d)))
+(align '(((a b) c) (d e)))
+
+(shuffle '((a b) c))
+(shuffle '(((a b) c) d))
