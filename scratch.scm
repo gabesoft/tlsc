@@ -220,8 +220,8 @@
 (multiinsertRL-co 'a 'x 'w '(x y z w x k x y z)
                   (lambda (lat L R) (pair lat (pair L R))))
 (multiinsertRL-co 'salty 'fish 'chips 
-               '(chips and fish or fish and chips)
-               (lambda (lat L R) (pair lat (pair L R))))
+                  '(chips and fish or fish and chips)
+                  (lambda (lat L R) (pair lat (pair L R))))
 
 (evens-only* '(((3 4 5) 6 7) 8 9 10 (11 12) (13 (14 (15) 16 17)) 18))
 (evens-only* '((9 1 2 8) 3 10 ((9 9) 7 6) 2))
@@ -259,3 +259,11 @@
 
 (shuffle '((a b) c))
 (shuffle '(((a b) c) d))
+
+(len2 '(a b c d e f g))
+(len3 '(a b c d e f g))
+(len4 '(a b c d e f g))
+(len5 '(a b c d e f g))
+
+(fact 100)
+(fib 20)

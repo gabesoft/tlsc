@@ -708,3 +708,61 @@
   (lambda (x)
     (eternity x)))
 
+(define ident (lambda (x) x))
+
+(define len2
+  ((lambda (mk-len) (mk-len mk-len))
+   (lambda (mk-len)
+     (lambda (l)
+       (cond
+         ((null? l) 0)
+         (else (add1 ((mk-len mk-len) (cdr l)))))))))
+
+(define len3
+  ((lambda (mk-len) (mk-len mk-len))
+   (lambda (mk-len)
+     ((lambda (len)
+        (lambda (l)
+          (cond
+            ((null? l) 0)
+            (else (add1 (len (cdr l)))))))
+      (lambda (l) ((mk-len mk-len) l))))))
+
+(define len4
+  ((lambda (le)
+     ((lambda (mk-len) (mk-len mk-len))
+      (lambda (mk-len) (le (lambda (x) ((mk-len mk-len) x))))))
+   (lambda (len)
+     (lambda (l)
+       (cond
+         ((null? l) 0)
+         (else (add1 (len (cdr l)))))))))
+
+(define Y
+  (lambda (le)
+    ((lambda (f) (f f))
+     (lambda (f) (le (lambda (x) ((f f) x)))))))
+
+(define len5
+  (Y (lambda(len)
+       (lambda (l)
+         (cond
+           ((null? l) 0)
+           (else (add1 (len (cdr l)))))))))
+
+(define fact
+  (Y (lambda (f)
+       (lambda (x)
+         (cond
+           ((zero? x) 1)
+           (else (* x (f (sub1 x)))))))))
+
+(define fib
+  (Y (lambda (f)
+       (lambda (x)
+         (cond
+           ((zero? x) 0)
+           ((or (one? x) (one? (sub1 x))) 1)
+           (else (+ (f (sub1 x)) (f (sub1 (sub1 x))))))))))
+
+; ch 10
