@@ -835,3 +835,25 @@
       ((eq? e #t) #t)
       ((eq? e #f) #f)
       (else (pair 'primitive e)))))
+
+(define text-of snd)
+
+(define *quote
+  (lambda (e table)
+    (text-of e)))
+
+(define initial-table
+  (lambda (name)
+    (cons name '(not found))))
+
+(define *identifier
+  (lambda (e table)
+    (table-lookup e table initial-table)))
+
+(define *lambda
+  (lambda (e table)
+    (pair 'non-primitive (cons table (cdr e)))))
+
+(define table-of fst)
+(define formals-of snd)
+(define body-of trd)

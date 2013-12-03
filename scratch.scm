@@ -288,3 +288,4 @@
   (lambda (name) 0))
 
 (value ((lambda (a) (cons a '())) (quote (a b c))))
+(expr-meaning '(lambda (x) (cons x y)) '(((y z) ((8) 9))))
