@@ -381,7 +381,7 @@
        (mul (value (fst-sub-exp aexp)) (value (snd-sub-exp aexp))))
       ((eq? (operator aexp) '^)
        (pow (value (fst-sub-exp aexp)) (value (snd-sub-exp aexp))))
-      (else '(unknown operation)))))
+      (else aexp))))
 
 ; ch 7
 (define set?
@@ -656,7 +656,7 @@
   (lambda (a lat)
     (keep-looking a (pick 0 lat) lat)))
 
-(define keep-looking 
+(define keep-looking
   (lambda (a b lat)
     (cond
       ((eq? a b) #t)
@@ -665,7 +665,7 @@
 
 (define shift
   (lambda (apair)
-    (pair (fst (fst apair)) 
+    (pair (fst (fst apair))
           (pair (snd (fst apair))
                 (snd apair)))))
 
@@ -766,3 +766,73 @@
            (else (+ (f (sub1 x)) (f (sub1 (sub1 x))))))))))
 
 ; ch 10
+(define new-entry pair)
+
+(define entry-lookup-help
+  (lambda (name names vals default)
+    (cond
+      ((null? names) (default name))
+      ((eq? (car names) name) (car vals))
+      (else (entry-lookup-help name (cdr names) (cdr vals) default)))))
+
+(define entry-lookup
+  (lambda (name entry default)
+    (entry-lookup-help name (fst entry) (snd entry) default)))
+
+(define extend-table cons)
+
+(define table-lookup
+  (lambda (name table default)
+    (cond
+      ((null? table) (default name))
+      (else (entry-lookup name
+                          (car table)
+                          (lambda (name) (table-lookup name (cdr table) default)))))))
+
+(define atom-to-action
+  (lambda (e)
+    (cond
+      ((number? e) *const)
+      ((or (eq? e #t) (eq? e #f)) *const)
+      ((eq? e 'cons) *const)
+      ((eq? e 'car) *const)
+      ((eq? e 'cdr) *const)
+      ((eq? e 'null?) *const)
+      ((eq? e 'eq?) *const)
+      ((eq? e 'atom?) *const)
+      ((eq? e 'zero?) *const)
+      ((eq? e 'add1) *const)
+      ((eq? e 'sub1) *const)
+      ((eq? e 'number?) *const)
+      (else *identifier))))
+
+(define list-to-action
+  (lambda (e)
+    (cond
+      ((list? (car e)) *application)
+      ((eq? (car e) 'quote) *quote)
+      ((eq? (car e) 'lambda) *lambda)
+      ((eq? (car e) 'cond) *cond)
+      (else *application))))
+
+(define expr-to-action
+  (lambda (e)
+    (cond
+      ((atom? e) (atom-to-action e))
+      (else (list-to-action e)))))
+
+(define expr-meaning
+  (lambda (e table)
+    ((expr-to-action e) e table)))
+
+(define expr-value
+  (lambda (e)
+    (expr-meaning e '())))
+
+(define *const
+  (lambda (e table)
+    (cond
+      ((number? e) e)
+      ((eq? e #t) #t)
+      ((eq? e #f) #f)
+      (else (pair 'primitive e)))))

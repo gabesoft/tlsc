@@ -267,3 +267,24 @@
 
 (fact 100)
 (fib 20)
+
+(new-entry '(a b c) '(1 1 3))
+
+(entry-lookup 'c (new-entry '(a b c d) '(1 2 3 4)) (lambda (name) 0))
+(entry-lookup 'e (new-entry '(a b c d) '(1 2 3 4)) (lambda (name) 0))
+
+(table-lookup
+  'c
+  '(((a b e d) (1 2 3 4))
+    ((d e f g h) (1 2 3 4 5))
+    ((a b c e f) (9 1 8 7 4)))
+  (lambda (name) 0))
+
+(table-lookup
+  'x
+  '(((a b e d) (1 2 3 4))
+    ((d e f g h) (1 2 3 4 5))
+    ((a b c e f) (9 1 8 7 4)))
+  (lambda (name) 0))
+
+(value ((lambda (a) (cons a '())) (quote (a b c))))
