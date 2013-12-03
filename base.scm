@@ -809,7 +809,6 @@
 (define list-to-action
   (lambda (e)
     (cond
-      ((list? (car e)) *application)
       ((eq? (car e) 'quote) *quote)
       ((eq? (car e) 'lambda) *lambda)
       ((eq? (car e) 'cond) *cond)
