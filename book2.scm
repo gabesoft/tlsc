@@ -82,7 +82,7 @@
     ((lambda (f) (f f))
      (lambda (f) (le (lambda (x) ((f f) x)))))))
 
-(define multiremember
+(define multiremember2
   (lambda (a lat)
     ((Y (lambda (mr)
           (lambda (lat)
@@ -90,6 +90,17 @@
               ((null? lat) '())
               ((eq? a (car lat)) (mr (cdr lat)))
               (else (cons (car lat) (mr (cdr lat))))))))
+     lat)))
+
+(define multiremember
+  (lambda (a lat)
+    ((letrec
+       ((mr (lambda (lat)
+              (cond
+                ((null? lat) '())
+                ((eq? a (car lat)) (mr (cdr lat)))
+                (else (cons (car lat) (mr (cdr lat))))))))
+       mr)
      lat)))
 
 ; 24
