@@ -461,11 +461,11 @@
       ((null? (cdr l)) #f)
       (else (null? (cdr (cdr l)))))))
 
-(define fst (lambda (pair) (car pair)))
-(define snd (lambda (pair) (car (cdr pair))))
+(define fst (lambda (p) (car p)))
+(define snd (lambda (p) (car (cdr p))))
+(define trd (lambda (l) (snd (cdr l))))
 (define pair (lambda (s1 s2) (cons s1 (cons s2 '()))))
 
-(define trd (lambda (l) (snd (cdr l))))
 
 ; #t if the first element of each pair in rel form a set
 (define fun?
@@ -857,3 +857,81 @@
 (define table-of fst)
 (define formals-of snd)
 (define body-of trd)
+
+(define else? (lambda (x) (eq? x 'else)))
+(define question-of fst)
+(define answer-of snd)
+
+(define evcon
+  (lambda (lines table)
+    (cond
+      ((else? (question-of (car lines)))
+       (expr-meaning (answer-of (car lines)) table))
+      ((expr-meaning (question-of (car lines)) table)
+       (expr-meaning (answer-of (car lines)) table))
+      (else (evcon (cdr lines) table)))))
+
+(define cond-lines-of cdr)
+
+(define *cond
+  (lambda (e table)
+    (evcon (cond-lines-of e) table)))
+
+(define evlis
+  (lambda (args table)
+    (cond
+      ((null? args) '())
+      (else (cons (expr-meaning (car args) table)
+                  (evlis (cdr args) table))))))
+
+(define function-of car)
+(define arguments-of cdr)
+
+(define *application
+  (lambda (e table)
+    (*apply
+      (expr-meaning (function-of e) table)
+      (evlis (arguments-of e) table))))
+
+(define primitive? (lambda (l) (eq? (fst l) 'primitive)))
+(define non-primitive? (lambda (l) (eq? (fst l) 'non-primitive)))
+
+(define *atom?
+  (lambda (x)
+    (cond
+      ((atom? x) #t)
+      ((null? x) #f)
+      ((eq? (car x) 'primitive) #t)
+      ((eq? (car x) 'non-primitive) #t)
+      (else #f))))
+
+(define *apply-primitive
+  (lambda (name vals)
+    (cond
+      ((eq? name 'cons) (cons (fst vals) (snd vals)))
+      ((eq? name 'car) (car (fst vals)))
+      ((eq? name 'cdr) (cdr (fst vals)))
+      ((eq? name 'null?) (null? (fst vals)))
+      ((eq? name 'eq?) (eq? (fst vals) (snd vals)))
+      ((eq? name 'atom?) (*atom? (fst vals)))
+      ((eq? name 'zero?) (zero? (fst vals)))
+      ((eq? name 'add1) (add1 (fst vals)))
+      ((eq? name 'sub1) (sub1 (fst vals)))
+      ((eq? name 'number?) (number? (fst vals)))
+      (else (pair 'unknown-primitive name)))))
+
+(define *apply-closure
+  (lambda (closure vals)
+    (expr-meaning (body-of closure)
+                  (extend-table (new-entry (formals-of closure) vals)
+                                (table-of closure)))))
+
+(define *apply
+  (lambda (fun vals)
+    (cond
+      ((primitive? fun)
+       (*apply-primitive (snd fun) vals))
+      ((non-primitive? fun)
+       (*apply-closure (snd fun) vals))
+      (else (pair 'invalid-data fun)))))
+

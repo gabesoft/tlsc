@@ -219,7 +219,7 @@
 (multiinsertRL    'a 'x 'w '(x y z w x k))
 (multiinsertRL-co 'a 'x 'w '(x y z w x k x y z)
                   (lambda (lat L R) (pair lat (pair L R))))
-(multiinsertRL-co 'salty 'fish 'chips 
+(multiinsertRL-co 'salty 'fish 'chips
                   '(chips and fish or fish and chips)
                   (lambda (lat L R) (pair lat (pair L R))))
 
@@ -289,3 +289,24 @@
 
 (value ((lambda (a) (cons a '())) (quote (a b c))))
 (expr-meaning '(lambda (x) (cons x y)) '(((y z) ((8) 9))))
+
+(table-of (snd (expr-meaning '(lambda (x) (cons x y)) '(((y z) ((8) 9))))))
+(formals-of (snd (expr-meaning '(lambda (x) (cons x y)) '(((y z) ((8) 9))))))
+(body-of (snd (expr-meaning '(lambda (x) (cons x y)) '(((y z) ((8) 9))))))
+
+(fst (snd '(non-primitive ((((y z) ((8) 9))) (x) (cons x y)))))
+(snd (snd '(non-primitive ((((y z) ((8) 9))) (x) (cons x y)))))
+(trd (snd '(non-primitive ((((y z) ((8) 9))) (x) (cons x y)))))
+
+(*cond '(cond (c k) (else p)) '(((c) (#t)) ((k p) (5 (6)))))
+(*cond '(cond (c k) (else p)) '(((c) (#f)) ((k p) (5 (6)))))
+
+(evlis '(a b c x) '(((a b c d) (1 2 3 4)) ((y x) (7 8))))
+
+(body-of '((((u v w) (1 2 3)) ((x y z) (4 5 6))) (x y) (cons z x)))
+(formals-of '((((u v w) (1 2 3)) ((x y z) (4 5 6))) (x y) (cons z x)))
+(table-of '((((u v w) (1 2 3)) ((x y z) (4 5 6))) (x y) (cons z x)))
+
+(*apply-closure
+  '((((u v w) (1 2 3)) ((x y z) (4 5 6))) (x y) (cons z x))
+  '((a b c) (d e f)))
