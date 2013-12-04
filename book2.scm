@@ -1,3 +1,5 @@
+; ch 11
+
 (define atom?
   (lambda (x)
     (and (not (pair? x)) (not (null? x)))))
@@ -52,4 +54,42 @@
 
 (define sum-of-prefixes (lambda (tup) (sum-of-prefixes-b 0 tup)))
 
-; 18
+(define add1 (lambda (n) (+ n 1)))
+(define sub1 (lambda (n) (- n 1)))
+(define zero? (lambda (n) (eq? n 0)))
+(define one? (lambda (n) (eq? n 1)))
+
+(define pick
+  (lambda (n lat)
+    (cond
+      ((one? n) (car lat))
+      (else (pick (sub1 n) (cdr lat))))))
+
+(define scramble-b
+  (lambda (tup rev-pre)
+    (cond
+      ((null? tup) '())
+      (else (cons (pick (car tup) (cons (car tup) rev-pre))
+                  (scramble-b (cdr tup)
+                              (cons (car tup) rev-pre)))))))
+
+(define scramble (lambda (tup) (scramble-b tup '())))
+
+; ch 12
+
+(define Y
+  (lambda (le)
+    ((lambda (f) (f f))
+     (lambda (f) (le (lambda (x) ((f f) x)))))))
+
+(define multiremember
+  (lambda (a lat)
+    ((Y (lambda (mr)
+          (lambda (lat)
+            (cond
+              ((null? lat) '())
+              ((eq? a (car lat)) (mr (cdr lat)))
+              (else (cons (car lat) (mr (cdr lat))))))))
+     lat)))
+
+; 24
